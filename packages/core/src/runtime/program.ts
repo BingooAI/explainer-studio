@@ -10,6 +10,7 @@ import type { EmphasisRegistry } from '../motion/emphasis.js'
 import type { ResolvedProfiles } from '../profiles/registry.js'
 import type { ExplainerDocument, Scene } from '../schema/document.js'
 import type { LocaleBundle, Narration } from '../schema/locale.js'
+import { stripCues } from './cues.js'
 
 /**
  * A `Program` is a document prepared for playback at one aspect: scenes laid end to end,
@@ -160,14 +161,6 @@ function narrationDuration(narration: Narration, bundle: LocaleBundle, profiles:
   if (lastWord) return lastWord.end
 
   return spokenSeconds(stripCues(narration.script), profiles.speech, bundle.script)
-}
-
-/**
- * Cue markers are timing instructions, not speech. Counting them would inflate the estimate
- * by roughly a word per beat, which compounds across a lesson.
- */
-export function stripCues(script: string): string {
-  return script.replace(/\[\[cue:[^\]]*\]\]/g, '')
 }
 
 /**

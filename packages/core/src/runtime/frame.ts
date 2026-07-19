@@ -4,6 +4,7 @@
 import type { Rect } from '../layout/resolve.js'
 import type { Gate } from '../schema/document.js'
 import type { Pose, StyleTokens } from '../schema/primitives.js'
+import { captionText } from './cues.js'
 import { slotAt, type NarrationSegment, type Program } from './program.js'
 
 /**
@@ -168,18 +169,10 @@ function captionAt(narrations: readonly NarrationSegment[], tScene: number): Ren
 
     return {
       ref: segment.ref,
-      text: stripCueMarkers(segment.narration.script),
+      text: captionText(segment.narration.script),
       wordIndex,
     }
   }
 
   return undefined
-}
-
-/** Markers are timing instructions for the engine, never something a viewer should read. */
-function stripCueMarkers(script: string): string {
-  return script
-    .replace(/\[\[cue:[^\]]*\]\]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
 }

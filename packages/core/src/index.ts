@@ -162,10 +162,11 @@ export {
   type SoundCue,
 } from './motion/choreograph.js'
 
+export { captionText, cueNames, stripCues } from './runtime/cues.js'
+
 export {
   buildProgram,
   slotAt,
-  stripCues,
   type BuildProgramOptions,
   type NarrationSegment,
   type Program,
