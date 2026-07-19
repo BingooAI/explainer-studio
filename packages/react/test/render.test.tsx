@@ -232,3 +232,49 @@ describe('painter registry', () => {
     expect(createPainterRegistry().size).toBe(0)
   })
 })
+
+describe('usePlayer gates', () => {
+  const gated = () => {
+    const withGate = {
+      ...doc,
+      scenes: [
+        { ...doc.scenes[0]!, id: 'lead' },
+        {
+          id: 'ask',
+          kind: 'gate' as const,
+          layout: { template: 'title-card', regions: { headline: ['title'] }, overrides: {} },
+          elements: [doc.scenes[0]!.elements[0]!],
+          beats: [],
+          narrations: [],
+          gate: { kind: 'select', prompt: 'k.title', question: {}, feedback: {}, patience: 30 },
+        },
+      ],
+    } as ExplainerDocument
+
+    return buildProgram(withGate, bundle, {
+      profiles: profiles(),
+      templates: createTemplateRegistry(),
+      emphasis: createEmphasisRegistry(),
+      aspect: '16:9',
+    })
+  }
+
+  it('reports a gate as pending once its scene has played', () => {
+    const program = gated()
+    const at = program.gateStarts[0]!
+
+    expect(frame(program, at - 0.5).gate).toBeUndefined()
+    expect(frame(program, at + 0.01).gate?.kind).toBe('select')
+  })
+
+  it('keeps reporting the gate on the frame after it is answered', () => {
+    // `frame` is pure and has no notion of "answered" — it cannot know. Which is exactly
+    // why the player must key its question panel off the player's pending state rather
+    // than off the frame, or Continue appears to do nothing.
+    const program = gated()
+    const at = program.gateStarts[0]!
+
+    expect(frame(program, at + 0.5).gate).toBeDefined()
+    expect(frame(program, at + 2).gate).toBeDefined()
+  })
+})
