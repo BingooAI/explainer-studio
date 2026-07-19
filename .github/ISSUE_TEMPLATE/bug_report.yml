@@ -54,4 +54,4 @@ body:
     id: environment
     attributes:
       label: OS and Node version
-      placeholder: macOS 15.2, Node 20.11
+      placeholder: macOS 15.2, Node 22.11

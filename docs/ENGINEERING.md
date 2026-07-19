@@ -57,7 +57,7 @@
 | **R4**  | **Structure ⟂ language.** `ExplainerDoc` is language-neutral; every human-readable string lives in a `LocaleBundle`. **No natural-language text, speech-rate constant or glyph metric may be hardcoded in the engine** — those are locale packs. |
 | **R5**  | **Authors declare intent, never milliseconds.** Scenes say `reveal` / `emphasize` / `drawOn`. Timing and easing live in a versioned profile. Documents pin profile versions so today's lesson renders the same after we retune. |
 | **R6**  | **Elements have no coordinates.** They name a layout `region`; `resolveLayout` computes rects. Coordinates stay *unrepresentable* in the authoring schema — that is why generated layouts cannot overlap. |
-| **R7**  | **Packages are platform-pure.** `core`, `quality`, `providers`, `generator` must not import `react`, `next/*`, `react-native`, or Node builtins (`node:*`, `fs`, `path`, `crypto`), and must not call `fetch`, `process.env`, `Date.now()` or `Math.random()`. Platform concerns are injected through ports. Enforced in CI. |
+| **R7**  | **Packages are platform-pure.** `kernel`, `core`, `quality`, `providers`, `generator` must not import `react`, `next/*`, `react-native`, or Node builtins (`node:*`, `fs`, `path`, `crypto`), and must not call `fetch`, `process.env`, `Date.now()` or `Math.random()`. Platform concerns are injected through ports. Enforced in CI. |
 | **R8**  | **Never require one vendor.** Anthropic, OpenAI-compatible and Ollama must all work. **No hardcoded endpoint — nothing may assume `bingoo.ai` exists.** Requiring our key would make this a sales funnel in disguise, and the community will say so out loud. |
 | **R9**  | **The localhost guarantee.** `git clone && pnpm install && pnpm dev` gives a working studio with **no account, no API key, no network call**. This is tested in CI, not a best effort. Never merge anything that breaks it. |
 | **R10** | **Model output is untrusted input.** Zod at every boundary; whitelist against the registry, clamp numbers, drop invented ids, never render model output as markup. Content moderation is a **configurable stage, off by default** — so never describe default output as moderated or classroom-safe, and never let a feature quietly depend on it having run. |
@@ -80,6 +80,7 @@ Decide the layer before writing anything. Full detail in
 
 | Kind of work | Goes in | Notes |
 | --- | --- | --- |
+| Registry primitives, config resolver, shared error type | `packages/kernel` | Pure; zod its only dependency. Depended on by everything, depends on nothing here (ADR 0002). |
 | Document schema, layout, choreography, `frame`, type scale, profiles | `packages/core` | Pure, zod-first. The engine. |
 | Lint, layout gate, pedagogy/arc gate, generated authoring contract | `packages/quality` | Pure + deterministic. **No LLM** (R2). |
 | Port interfaces, provider registry, cue sync, image resolution | `packages/providers` | Pure. No vendor names, no I/O. |

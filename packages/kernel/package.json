@@ -1,0 +1,41 @@
+{
+  "name": "@bingoo.ai/explainer-kernel",
+  "version": "0.0.0",
+  "description": "Registry and configuration primitives for Explainer Studio. Pure, zero-dependency except zod.",
+  "license": "Apache-2.0",
+  "author": "Bingoo.ai (https://bingoo.ai)",
+  "homepage": "https://github.com/BingooAI/explainer-studio",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BingooAI/explainer-studio.git",
+    "directory": "packages/kernel"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

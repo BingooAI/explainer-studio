@@ -19,7 +19,7 @@ bug in our design — please open an issue and tell us.**
 
 ## Setting up
 
-Requires Node.js 20.11+ and pnpm 9+.
+Requires Node.js 22+ and pnpm 9+.
 
 ```bash
 git clone https://github.com/BingooAI/explainer-studio.git
