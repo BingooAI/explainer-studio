@@ -23,6 +23,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./ops": {
+      "types": "./dist/ops.d.ts",
+      "import": "./dist/ops.js",
+      "require": "./dist/ops.cjs"
     }
   },
   "scripts": {
@@ -34,10 +39,24 @@
   "dependencies": {
     "@bingoo.ai/explainer-core": "workspace:*",
     "@bingoo.ai/explainer-kernel": "workspace:*",
+    "@bingoo.ai/explainer-react": "workspace:*",
     "zod": "^4.4.3"
   },
   "publishConfig": {
     "access": "public",
     "provenance": true
+  },
+  "peerDependencies": {
+    "react": "^18.3.0 || ^19.0.0",
+    "react-dom": "^18.3.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "jsdom": "^25.0.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@testing-library/jest-dom": "^6.6.3"
   }
 }

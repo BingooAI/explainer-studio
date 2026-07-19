@@ -449,8 +449,17 @@ which is also what makes the localhost demo work with nothing installed.
 `editor` is scene-centric — you edit one scene at a time, like slides, with a derived clip
 timeline underneath.
 
-- **Every mutation is a pure `EditOp` with `apply(state, op) → {state, inverse}`.** Nothing
-  mutates in place. The inverse is the backbone of undo/redo, version history and audit.
+- **Every mutation is a pure `EditOp` with `apply(workspace, op) → {workspace, inverse}`.**
+  Nothing mutates in place. The inverse is the backbone of undo/redo, version history and audit.
+- The workspace is **the document *and* its locale bundles**. Editing text is the commonest
+  edit there is, and words live in bundles (R4) — so both move under one history. With two
+  histories, undo after "rename the heading, then reorder the scenes" walks back through them
+  in an order that belongs to neither. Operations that only touch structure are still written
+  against the document alone and lifted by `documentOp`, so they cannot alter a bundle by
+  accident.
+- The package has two entry points: `@bingoo.ai/explainer-editor/ops` is pure and pulls in no
+  renderer, for a server applying edits or a script running a migration. The default entry
+  adds the panels.
 - The clip model is **derived from the cue/beat document** — the timeline never invents
   timing, so dragging a clip is translated back into `EditOp`s on beats and cues.
 - The author never sees cue strings, verbs or canvas fractions. They see clips, effects and

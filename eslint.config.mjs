@@ -16,7 +16,10 @@ const PURE_PACKAGES = [
   'packages/quality/**',
   'packages/providers/**',
   'packages/generator/**',
-  'packages/editor/**',
+  'packages/editor/src/op.ts',
+  'packages/editor/src/ops.ts',
+  'packages/editor/src/ops/**',
+  'packages/editor/src/history.ts',
 ]
 
 const FORBIDDEN_IN_PURE = [
