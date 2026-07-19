@@ -3,6 +3,7 @@
 
 import type { RenderModel, ResolvedProfiles } from '@bingoo.ai/explainer-core'
 import type { JSX } from 'react'
+import { Backdrop, type BackdropKind } from './chrome/Backdrop.js'
 import { CaptionBand } from './chrome/CaptionBand.js'
 import { CARD_SLOTS, SlotCard } from './chrome/SlotCard.js'
 import type { PainterRegistry } from './painters/registry.js'
@@ -33,6 +34,7 @@ export interface StageProps {
   readonly label?: string
   /** Captions are drawn by default so an export carries them. */
   readonly captions?: boolean
+  readonly backdrop?: BackdropKind
   readonly className?: string
 }
 
@@ -43,6 +45,7 @@ export function Stage({
   theme = defaultTheme,
   label,
   captions = true,
+  backdrop = 'paper',
   className,
 }: StageProps): JSX.Element {
   const metrics = { profiles, script: undefined }
@@ -61,12 +64,11 @@ export function Stage({
       data-scene={model.sceneId}
       style={{ width: '100%', height: 'auto', display: 'block' }}
     >
-      <rect
-        x={0}
-        y={0}
-        width={model.canvas.width}
-        height={model.canvas.height}
-        fill={color(theme, 'surface')}
+      <Backdrop
+        kind={backdrop}
+        canvas={model.canvas}
+        horizon={profiles.layout.horizon[model.aspect] ?? 0.8}
+        theme={theme}
       />
 
       {Object.entries(model.slots).map(([name, rect]) =>
@@ -90,7 +92,13 @@ export function Stage({
               transform={transformFor(item.rect, item.pose)}
               opacity={item.pose.opacity === 1 ? undefined : item.pose.opacity}
             >
-              <Painter item={item} strings={model.strings} profiles={profiles} canvas={model.canvas} />
+              <Painter
+                item={item}
+                strings={model.strings}
+                profiles={profiles}
+                canvas={model.canvas}
+                rects={model.rects}
+              />
             </g>
           )
         })}

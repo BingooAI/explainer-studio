@@ -116,6 +116,7 @@ describe('createProfileRegistry', () => {
           fillRatio: 0.9,
           overlapRatio: 0.5,
           slotPadding: 0.04,
+          horizon: { '16:9': 0.8 },
         }),
       ).toThrowError(/canvas/i)
     })

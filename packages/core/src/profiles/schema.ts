@@ -79,6 +79,14 @@ export const layoutProfile = z.object({
   overlapRatio: ratio,
   /** Space between a slot's edge and its content, as a fraction of the slot's short side. */
   slotPadding: ratio,
+  /**
+   * Where the ground sits, as a fraction of canvas height, per aspect.
+   *
+   * One number, shared by the backdrop that paints the horizon and anything that stands on
+   * it. Bingoo kept two — the meadow was painted at 0.78 while props were seated at 0.80 —
+   * so a figure stood below the grass in landscape and hovered above it in portrait.
+   */
+  horizon: z.record(z.string(), ratio),
 })
 
 export type LayoutProfile = z.infer<typeof layoutProfile>

@@ -206,12 +206,14 @@ describe('painter registry', () => {
     // Proved by rendering it, not merely by registering it — a registry that accepts a
     // painter the Stage never calls would pass a weaker test and still be broken.
     const registry = createBuiltInPainters()
-    registerPainter(registry, { id: 'diagram', label: 'Diagram' }, ({ item }) => <g data-plugin={item.id} />)
+    registerPainter(registry, { id: 'fraction-bar', label: 'Fraction bar' }, ({ item }) => (
+      <g data-plugin={item.id} />
+    ))
 
     const model = modelAt(0)
     const withPlugin = {
       ...model,
-      items: model.items.map((item) => ({ ...item, type: 'diagram' })),
+      items: model.items.map((item) => ({ ...item, type: 'fraction-bar' })),
     }
     const { container } = render(<Stage model={withPlugin} painters={registry} profiles={profiles()} />)
 
