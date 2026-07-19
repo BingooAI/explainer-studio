@@ -32,6 +32,8 @@ export interface RenderItem {
   readonly content: unknown
   readonly align: 'start' | 'center' | 'end' | 'stretch'
   readonly z: number
+  /** Which layout region holds it. Lets the renderer group items into panels. */
+  readonly slot: string
   /**
    * How many parts of a multi-part element are showing. `Infinity` means all of them.
    * A painter that does not have parts ignores it.
@@ -55,6 +57,14 @@ export interface RenderModel {
   /** Where the current scene starts in the program. */
   readonly sceneStart: number
   readonly canvas: { readonly width: number; readonly height: number }
+  /**
+   * The layout's slot rectangles.
+   *
+   * Carried so a renderer can draw a panel behind a group of items — which is what makes
+   * content read as *grouped* rather than as things floating on a background. Deriving it
+   * from the items would guess at the region's real bounds.
+   */
+  readonly slots: Readonly<Record<string, Rect>>
   /** Visible items only, sorted back to front. */
   readonly items: readonly RenderItem[]
   readonly caption?: RenderCaption
@@ -81,6 +91,7 @@ export function frame(program: Program, t: number): RenderModel {
       tScene: 0,
       sceneStart: 0,
       canvas: program.canvas,
+      slots: {},
       items: [],
       theme: program.document.theme,
       strings: program.bundle.strings,
@@ -110,6 +121,7 @@ export function frame(program: Program, t: number): RenderModel {
       content: element.content,
       align: placement.align,
       z: placement.z,
+      slot: placement.slot,
       items: slot.timeline.itemsAt(placement.id, tScene),
     })
   }
@@ -127,6 +139,7 @@ export function frame(program: Program, t: number): RenderModel {
     tScene,
     sceneStart: slot.start,
     canvas: program.canvas,
+    slots: slot.layout.slots,
     items,
     theme: program.document.theme,
     strings: program.bundle.strings,

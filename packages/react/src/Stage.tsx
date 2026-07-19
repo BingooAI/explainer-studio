@@ -3,62 +3,83 @@
 
 import type { RenderModel, ResolvedProfiles } from '@bingoo.ai/explainer-core'
 import type { JSX } from 'react'
+import { CaptionBand } from './chrome/CaptionBand.js'
+import { CARD_SLOTS, SlotCard } from './chrome/SlotCard.js'
 import type { PainterRegistry } from './painters/registry.js'
+import { color, defaultTheme, type ThemeTokens } from './theme/tokens.js'
 import { transformFor } from './transform.js'
 
 /**
  * The Stage paints a `RenderModel` and does nothing else.
  *
- * It owns no timing, no layout and no easing — those were decided by the engine, and a
- * renderer that recomputed any of them would be a second source of truth (R3). Every
- * temptation to "just handle this one case here" is the beginning of two products that
- * look different and are each correct according to themselves.
+ * It owns no timing, no layout and no easing — those were decided by the engine (R3). A
+ * renderer that recomputed any of them would be a second source of truth, and the two would
+ * drift apart in ways nobody notices until a video disagrees with its own preview.
  *
- * One `<svg>` with a viewBox in canvas units, so the whole lesson scales to any container
- * without a single number changing.
+ * Four layers, in this order, each earning its place:
+ *
+ *   1. **backdrop** — painted, not styled, so a headless export gets it too
+ *   2. **slot cards** — panels behind grouped regions; what makes a scene look composed
+ *   3. **items** — already sorted back to front by the engine
+ *   4. **chrome** — the caption, drawn inside the canvas so the exported video has it
  */
 
 export interface StageProps {
   readonly model: RenderModel
   readonly painters: PainterRegistry
   readonly profiles: ResolvedProfiles
+  readonly theme?: ThemeTokens
   /** Describes the lesson for assistive technology. */
   readonly label?: string
+  /** Captions are drawn by default so an export carries them. */
+  readonly captions?: boolean
   readonly className?: string
 }
 
-export function Stage({ model, painters, profiles, label, className }: StageProps): JSX.Element {
+export function Stage({
+  model,
+  painters,
+  profiles,
+  theme = defaultTheme,
+  label,
+  captions = true,
+  className,
+}: StageProps): JSX.Element {
+  const metrics = { profiles, script: undefined }
+
+  // Only regions that actually hold something get a card. An empty panel is a promise of
+  // content the scene never makes good on.
+  const occupied = new Set(model.items.map((item) => item.slot))
+
   return (
     <svg
       viewBox={`0 0 ${model.canvas.width} ${model.canvas.height}`}
       preserveAspectRatio="xMidYMid meet"
       className={className}
-      // The scene is a live region rather than an image: its content changes as the lesson
-      // plays, and a screen reader that announced it once would describe the first frame
-      // for the whole lesson.
       role="img"
-      aria-label={label ?? model.strings[model.sceneId] ?? 'Lesson'}
+      aria-label={label ?? 'Lesson'}
       data-scene={model.sceneId}
       style={{ width: '100%', height: 'auto', display: 'block' }}
     >
-      {/* Layer 1: backdrop. Painted rather than styled so a headless export gets it too. */}
       <rect
         x={0}
         y={0}
         width={model.canvas.width}
         height={model.canvas.height}
-        fill="var(--explainer-surface, #ffffff)"
+        fill={color(theme, 'surface')}
       />
 
-      {/* Layer 2: items, already sorted back to front by the engine. */}
-      <g color="var(--explainer-foreground, #111827)">
-        {model.items.map((item) => {
-          if (!painters.has(item.type)) {
-            // An unregistered type is a configuration problem, not a reason to blank the
-            // lesson. It renders as nothing and the quality gate reports it.
-            return null
-          }
+      {Object.entries(model.slots).map(([name, rect]) =>
+        CARD_SLOTS.has(name) && occupied.has(name) ? (
+          <SlotCard key={`card-${name}`} rect={rect} theme={theme} />
+        ) : null,
+      )}
 
+      <g color={color(theme, 'ink')}>
+        {model.items.map((item) => {
+          // An unregistered type is a configuration problem the quality gate reports, not a
+          // reason for the rest of the lesson to disappear.
+          if (!painters.has(item.type)) return null
           const Painter = painters.get(item.type)
 
           return (
@@ -74,6 +95,10 @@ export function Stage({ model, painters, profiles, label, className }: StageProp
           )
         })}
       </g>
+
+      {captions && model.caption ? (
+        <CaptionBand canvas={model.canvas} text={model.caption.text} theme={theme} metrics={metrics} />
+      ) : null}
     </svg>
   )
 }
