@@ -110,3 +110,33 @@ export {
   type TimingProfile,
   type TypeProfile,
 } from './profiles/schema.js'
+
+export {
+  createTemplateRegistry,
+  registerTemplate,
+  builtInTemplates,
+  slotDefinition,
+  templateDescriptor,
+  type SlotDefinition,
+  type TemplateDescriptor,
+  type TemplateRegistry,
+} from './layout/template.js'
+
+export {
+  resolveLayout,
+  type LayoutIssue,
+  type LayoutIssueCode,
+  type PlacedElement,
+  type Rect,
+  type ResolveLayoutOptions,
+  type ResolvedLayout,
+} from './layout/resolve.js'
+
+export {
+  charBudget,
+  glyphWidthFor,
+  resolveFontSize,
+  spokenSeconds,
+  type CharBudgetOptions,
+  type FontSize,
+} from './layout/type-scale.js'
