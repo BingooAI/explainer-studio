@@ -41,3 +41,31 @@ export function captionText(script: string): string {
 export function cueNames(script: string): string[] {
   return [...script.matchAll(CUE_MARKER)].map((match) => match[0].slice('[[cue:'.length, -2))
 }
+
+export interface CueSegment {
+  /** Words spoken between the previous marker and this one. */
+  readonly text: string
+  /** The marker that follows this text, or undefined for the trailing remainder. */
+  readonly cue?: string
+}
+
+/**
+ * Splits a script into spoken text and the markers between.
+ *
+ * Needed by anything that has to relate a marker to *where in the speech* it sits — cue
+ * re-timing above all. It lives here rather than in the consumer because this module owns
+ * the format: a second parser elsewhere is how the ReDoS came to exist in three places.
+ */
+export function splitCues(script: string): CueSegment[] {
+  const segments: CueSegment[] = []
+  let cursor = 0
+
+  for (const match of script.matchAll(CUE_MARKER)) {
+    const index = match.index
+    segments.push({ text: script.slice(cursor, index), cue: match[0].slice('[[cue:'.length, -2) })
+    cursor = index + match[0].length
+  }
+
+  segments.push({ text: script.slice(cursor) })
+  return segments
+}
