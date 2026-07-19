@@ -5,6 +5,7 @@ import { resolveFontSize } from '@bingoo.ai/explainer-core'
 import type { JSX } from 'react'
 import type { PainterProps } from './registry.js'
 import { charsPerLine } from '../text/wrap.js'
+import { defaultTheme as theme } from '../theme/tokens.js'
 
 /**
  * A table, revealed a row at a time.
@@ -77,7 +78,7 @@ export function TablePainter({ item, strings, profiles, canvas }: PainterProps):
   const headerOffset = header.length > 0 ? 1 : 0
 
   return (
-    <g>
+    <g fontFamily={theme.fonts.sans}>
       {header.length > 0 ? (
         <g>
           <rect

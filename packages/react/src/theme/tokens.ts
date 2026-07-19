@@ -16,7 +16,15 @@ export const themeDescriptor = z.object({
   id: z.string().min(1).max(64),
   label: z.string().min(1).max(128),
   colors: z.record(z.string(), z.string()),
-  fonts: z.object({ sans: z.string(), hand: z.string() }),
+  /**
+   * Two faces, used for different jobs.
+   *
+   * `display` carries headings and prose — it is allowed personality. `sans` carries data:
+   * tables, axes, numbers. Setting a table in a display face is how a chart stops being
+   * readable at the back of a room, and setting a heading in the data face is how a lesson
+   * ends up looking like a spreadsheet.
+   */
+  fonts: z.object({ display: z.string(), sans: z.string() }),
 })
 
 export type ThemeTokens = z.infer<typeof themeDescriptor>
@@ -33,20 +41,26 @@ export const defaultTheme: ThemeTokens = {
   id: 'default',
   label: 'Paper',
   colors: {
-    surface: '#fbf9f4',
-    paper: '#f7f2e9',
-    ink: '#2b2724',
-    inkSoft: '#7d736a',
-    faint: '#d8cfc2',
-    accent: '#e07a42',
-    accent2: '#4b8fc7',
-    good: '#3f9d5a',
-    warn: '#d9a441',
-    deep: '#2f6f4f',
+    // Warm paper rather than white. A lesson is looked at for minutes at a time, often on a
+    // projector that already pushes the whites, and pure white is where that becomes glare.
+    surface: '#fdfaf5',
+    paper: '#ffffff',
+    ink: '#1f1b17',
+    inkSoft: '#6b6259',
+    faint: '#e6ded1',
+    hairline: '#efe8dc',
+    // One accent, used only for the thing being pointed at. A palette where three colours
+    // all mean "look here" points at nothing.
+    accent: '#d96a2c',
+    accent2: '#3d7ea6',
+    good: '#3f8f5c',
+    warn: '#c9962e',
+    deep: '#2c5f6f',
   },
   fonts: {
-    sans: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
-    hand: '"Comic Sans MS", "Bradley Hand", cursive, system-ui',
+    display:
+      '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Serif", "Times New Roman", serif',
+    sans: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
   },
 }
 

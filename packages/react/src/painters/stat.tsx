@@ -5,7 +5,7 @@ import { resolveFontSize } from '@bingoo.ai/explainer-core'
 import type { JSX } from 'react'
 import type { PainterProps } from './registry.js'
 import { widthOf } from '../text/wrap.js'
-import { color, defaultTheme } from '../theme/tokens.js'
+import { color, defaultTheme, defaultTheme as theme } from '../theme/tokens.js'
 
 /**
  * One number, large.
@@ -55,7 +55,7 @@ export function StatPainter({ item, strings, profiles, canvas }: PainterProps): 
   const cy = item.rect.y + item.rect.height * (label === undefined ? 0.55 : 0.44)
 
   return (
-    <g>
+    <g fontFamily={theme.fonts.sans}>
       <text
         x={cx}
         y={cy}

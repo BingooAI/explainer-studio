@@ -52,7 +52,7 @@ export function PieChart({ rect, donut, series, scale, revealed, size, theme }: 
   })
 
   return (
-    <g>
+    <g fontFamily={theme.fonts.sans}>
       {slices.map((slice) =>
         slice.index >= revealed ? null : (
           <path

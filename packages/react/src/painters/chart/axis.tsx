@@ -53,7 +53,7 @@ export function AxisChart(props: AxisChartProps): JSX.Element {
     color(theme, s.color ?? CHART_PALETTE[i % CHART_PALETTE.length], 'accent')
 
   return (
-    <g>
+    <g fontFamily={theme.fonts.sans}>
       {/* Gridlines and their labels, drawn first so marks sit above them. */}
       {Array.from({ length: TICKS + 1 }, (_, i) => {
         const value = (scale.max * i) / TICKS
