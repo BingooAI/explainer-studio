@@ -1,140 +1,180 @@
 // SPDX-FileCopyrightText: 2026 Bingoo.ai
 // SPDX-License-Identifier: Apache-2.0
 
-import type { Program } from '@bingoo.ai/explainer-core'
-import type { JSX } from 'react'
-import { CaptionsIcon, CheckIcon, PauseIcon, PlayIcon, ReplayIcon, SpeedIcon } from './icons.js'
+import type { JSX, ReactNode } from 'react'
+import {
+  CaptionsIcon,
+  CheckIcon,
+  ChaptersIcon,
+  FullscreenIcon,
+  NextIcon,
+  PauseIcon,
+  PlayIcon,
+  PrevIcon,
+  ReplayIcon,
+  SkipBackIcon,
+  SkipForwardIcon,
+  VolumeIcon,
+} from './icons.js'
 import { PREFIX } from './styles.js'
-import type { Player } from '../usePlayer.js'
 
 /**
- * The transport bar.
+ * The control row.
  *
  * Controls stay visible rather than fading out over the stage. A video player hides them
  * because the video is the point and the chrome is in the way; in a lesson the teacher is
  * driving — pausing, going back over a step, jumping to the question — and hunting for a
  * control that vanished is friction at exactly the wrong moment.
- *
- * The scrubber is a real `<input type="range">` made invisible over a drawn track. Styling
- * a range input natively means three vendor-prefixed pseudo-element trees that disagree
- * about everything; overlaying keeps the keyboard behaviour, the screen-reader semantics
- * and the drag handling that browsers already implement correctly, and gives us a track we
- * can actually draw chapters on.
  */
 
 export interface PlayerBarProps {
-  readonly player: Player
-  readonly program: Program
+  readonly playing: boolean
+  readonly finished: boolean
+  readonly atGate: boolean
   readonly captions: boolean
-  readonly onCaptionsChange: (next: boolean) => void
   readonly speed: number
-  readonly onSpeedChange: (next: number) => void
+  readonly volume: number
+  readonly muted: boolean
+  readonly canPrev: boolean
+  readonly canNext: boolean
+  readonly fullscreen: boolean
+  readonly chaptersOpen: boolean
+  readonly showChapters: boolean
+  readonly speeds?: readonly number[]
+  readonly skipSeconds?: number
+  readonly disabled?: boolean
+  readonly onToggle: () => void
+  readonly onSkip: (seconds: number) => void
+  readonly onScene: (delta: -1 | 1) => void
+  readonly onCaptions: (next: boolean) => void
+  readonly onSpeed: (next: number) => void
+  readonly onVolume: (next: number) => void
+  readonly onMute: (next: boolean) => void
+  readonly onChapters: () => void
+  readonly onFullscreen: () => void
+  /** Popovers anchored to the bar, so they are not clipped by the player's rounded frame. */
+  readonly children?: ReactNode
 }
 
-const SPEEDS = [0.75, 1, 1.25, 1.5] as const
-const SKIP_SECONDS = 5
+/**
+ * Offered speeds, and how far the skip buttons jump.
+ *
+ * Defaults, not constants (R1). A language school reviewing pronunciation wants 0.5×; a
+ * revision deployment wants 3×; a lesson of long narration wants 30-second skips. None of
+ * those should need a fork, and none of them is a judgement we are in a position to make.
+ */
+export const DEFAULT_SPEEDS: readonly number[] = [0.75, 1, 1.25, 1.5, 2]
+export const DEFAULT_SKIP_SECONDS = 10
 
-export function PlayerBar({
-  player,
-  program,
-  captions,
-  onCaptionsChange,
-  speed,
-  onSpeedChange,
-}: PlayerBarProps): JSX.Element {
-  const duration = Math.max(program.duration, 0.001)
-  const finished = player.t >= duration - 0.01
-  const progress = Math.min(1, player.t / duration)
+export function PlayerBar(props: PlayerBarProps): JSX.Element {
+  const { playing, finished, atGate, disabled = false } = props
+  const speeds = props.speeds ?? DEFAULT_SPEEDS
+  const skip = props.skipSeconds ?? DEFAULT_SKIP_SECONDS
 
-  const primaryLabel = player.atGate
-    ? 'Continue past the question'
-    : finished
-      ? 'Play again'
-      : player.playing
-        ? 'Pause'
-        : 'Play'
+  const label = atGate ? 'Continue past the question' : finished ? 'Play again' : playing ? 'Pause' : 'Play'
 
   return (
     <div className={`${PREFIX}-bar`}>
       <button
         type="button"
-        className={`${PREFIX}-btn ${PREFIX}-btn--primary`}
-        onClick={() => {
-          if (player.atGate) player.resume()
-          else if (finished) {
-            player.seek(0)
-            player.play()
-          } else if (player.playing) player.pause()
-          else player.play()
-        }}
-        aria-label={primaryLabel}
-        title={primaryLabel}
+        className={`${PREFIX}-btn ${PREFIX}-btn--play`}
+        onClick={props.onToggle}
+        disabled={disabled}
+        aria-label={label}
+        title={label}
       >
-        {player.atGate ? (
-          <CheckIcon />
-        ) : finished ? (
-          <ReplayIcon />
-        ) : player.playing ? (
-          <PauseIcon />
-        ) : (
-          <PlayIcon />
-        )}
+        {atGate ? <CheckIcon /> : finished ? <ReplayIcon /> : playing ? <PauseIcon /> : <PlayIcon />}
       </button>
-
-      <span className={`${PREFIX}-time`}>{clock(player.t)}</span>
-
-      <div className={`${PREFIX}-scrub`}>
-        <input
-          type="range"
-          className={`${PREFIX}-range`}
-          min={0}
-          max={duration}
-          step={0.05}
-          value={player.t}
-          onChange={(event) => {
-            player.seek(Number(event.target.value))
-          }}
-          onKeyDown={(event) => {
-            // The browser's own arrow step is one unit of `step`, which at 0.05s is
-            // unusable. Five seconds is roughly a sentence.
-            if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
-              event.preventDefault()
-              player.seek(player.t + (event.key === 'ArrowRight' ? SKIP_SECONDS : -SKIP_SECONDS))
-            }
-          }}
-          aria-label="Position in the lesson"
-          aria-valuetext={`${clock(player.t)} of ${clock(duration)}`}
-        />
-        <div className={`${PREFIX}-track`}>
-          <div className={`${PREFIX}-fill`} style={{ width: `${(progress * 100).toFixed(2)}%` }} />
-          {program.gateStarts.map((at) => (
-            <span
-              key={at}
-              className={`${PREFIX}-chapter`}
-              style={{ left: `${((at / duration) * 100).toFixed(2)}%` }}
-              title="Question"
-              aria-hidden
-            />
-          ))}
-          <span
-            className={`${PREFIX}-thumb`}
-            style={{ left: `${(progress * 100).toFixed(2)}%` }}
-            aria-hidden
-          />
-        </div>
-      </div>
-
-      <span className={`${PREFIX}-time`}>{clock(duration)}</span>
 
       <button
         type="button"
         className={`${PREFIX}-btn`}
-        aria-pressed={captions}
         onClick={() => {
-          onCaptionsChange(!captions)
+          props.onSkip(-skip)
         }}
-        aria-label={captions ? 'Hide captions' : 'Show captions'}
-        title={captions ? 'Hide captions' : 'Show captions'}
+        disabled={disabled}
+        aria-label={`Back ${String(skip)} seconds`}
+        title={`Back ${String(skip)}s`}
+      >
+        <SkipBackIcon seconds={skip} />
+      </button>
+
+      <button
+        type="button"
+        className={`${PREFIX}-btn`}
+        onClick={() => {
+          props.onSkip(skip)
+        }}
+        disabled={disabled}
+        aria-label={`Forward ${String(skip)} seconds`}
+        title={`Forward ${String(skip)}s`}
+      >
+        <SkipForwardIcon seconds={skip} />
+      </button>
+
+      <button
+        type="button"
+        className={`${PREFIX}-btn`}
+        onClick={() => {
+          props.onScene(-1)
+        }}
+        disabled={disabled || !props.canPrev}
+        aria-label="Previous scene"
+        title="Previous scene"
+      >
+        <PrevIcon />
+      </button>
+
+      <button
+        type="button"
+        className={`${PREFIX}-btn`}
+        onClick={() => {
+          props.onScene(1)
+        }}
+        disabled={disabled || !props.canNext}
+        aria-label="Next scene"
+        title="Next scene"
+      >
+        <NextIcon />
+      </button>
+
+      <div className={`${PREFIX}-volume`}>
+        <button
+          type="button"
+          className={`${PREFIX}-btn`}
+          onClick={() => {
+            props.onMute(!props.muted)
+          }}
+          aria-label={props.muted ? 'Unmute narration' : 'Mute narration'}
+          title={props.muted ? 'Unmute' : 'Mute'}
+        >
+          <VolumeIcon muted={props.muted || props.volume === 0} />
+        </button>
+        <input
+          type="range"
+          className={`${PREFIX}-volume-slider`}
+          min={0}
+          max={1}
+          step={0.05}
+          value={props.muted ? 0 : props.volume}
+          onChange={(event) => {
+            props.onVolume(Number(event.target.value))
+          }}
+          aria-label="Narration volume"
+        />
+      </div>
+
+      <span className={`${PREFIX}-spacer`} />
+
+      <button
+        type="button"
+        className={`${PREFIX}-btn`}
+        aria-pressed={props.captions}
+        onClick={() => {
+          props.onCaptions(!props.captions)
+        }}
+        aria-label={props.captions ? 'Hide captions' : 'Show captions'}
+        title="Captions"
       >
         <CaptionsIcon />
       </button>
@@ -143,20 +183,40 @@ export function PlayerBar({
         type="button"
         className={`${PREFIX}-btn`}
         onClick={() => {
-          const index = SPEEDS.indexOf(speed as (typeof SPEEDS)[number])
-          onSpeedChange(SPEEDS[(index + 1) % SPEEDS.length] ?? 1)
+          const index = speeds.indexOf(props.speed)
+          props.onSpeed(speeds[(index + 1) % speeds.length] ?? 1)
         }}
-        aria-label={`Playback speed, currently ${String(speed)} times`}
+        aria-label={`Playback speed, currently ${String(props.speed)} times`}
         title="Playback speed"
       >
-        <SpeedIcon />
-        {speed}×
+        {props.speed}×
       </button>
+
+      {props.showChapters ? (
+        <button
+          type="button"
+          className={`${PREFIX}-btn`}
+          onClick={props.onChapters}
+          aria-expanded={props.chaptersOpen}
+          aria-pressed={props.chaptersOpen}
+          aria-label="Jump to a chapter"
+          title="Chapters"
+        >
+          <ChaptersIcon />
+        </button>
+      ) : null}
+
+      <button
+        type="button"
+        className={`${PREFIX}-btn`}
+        onClick={props.onFullscreen}
+        aria-label={props.fullscreen ? 'Leave full screen' : 'Full screen'}
+        title="Full screen"
+      >
+        <FullscreenIcon exit={props.fullscreen} />
+      </button>
+
+      {props.children}
     </div>
   )
-}
-
-function clock(seconds: number): string {
-  const total = Math.max(0, Math.round(seconds))
-  return `${String(Math.floor(total / 60))}:${String(total % 60).padStart(2, '0')}`
 }

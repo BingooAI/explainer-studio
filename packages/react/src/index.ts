@@ -9,12 +9,15 @@
  */
 
 export { Stage, type StageProps } from './Stage.js'
-export { PlayerBar, type PlayerBarProps } from './chrome/PlayerBar.js'
-export { SceneStrip, type SceneStripProps } from './chrome/SceneStrip.js'
+export { DEFAULT_SKIP_SECONDS, DEFAULT_SPEEDS, PlayerBar, type PlayerBarProps } from './chrome/PlayerBar.js'
+export { ChapterMenu, type ChapterMenuProps } from './chrome/ChapterMenu.js'
+export { ScrubPreview, type ScrubPreviewProps } from './chrome/ScrubPreview.js'
+export { clock, sceneTitle } from './chrome/format.js'
+export { Timeline, type TimelineProps } from './chrome/Timeline.js'
 export { ensureStyles, styles, PREFIX } from './chrome/styles.js'
 export { useSpeechClock, type SpeechOptions } from './speech.js'
 export { Backdrop, type BackdropKind, type BackdropProps } from './chrome/Backdrop.js'
-export { ExplainerPlayer, type ExplainerPlayerProps } from './ExplainerPlayer.js'
+export { ExplainerPlayer, type ExplainerPlayerProps, type PlayerStatus } from './ExplainerPlayer.js'
 export { usePlayer, type AudioClock, type Player, type UsePlayerOptions } from './usePlayer.js'
 
 export {
