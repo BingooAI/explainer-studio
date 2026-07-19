@@ -47,6 +47,7 @@ export const defaultLayout: LayoutProfile = {
   fillRatio: 0.94,
   overlapRatio: 0.5,
   slotPadding: 0.04,
+  horizon: { '16:9': 0.8, '9:16': 0.74 },
 }
 
 /** Sizes are fractions of the canvas short side, so the scale holds in both aspects. */

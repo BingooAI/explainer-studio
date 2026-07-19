@@ -56,6 +56,8 @@ export interface RenderModel {
   readonly tScene: number
   /** Where the current scene starts in the program. */
   readonly sceneStart: number
+  /** Which aspect this was built for. A painter that draws a horizon needs to know. */
+  readonly aspect: string
   readonly canvas: { readonly width: number; readonly height: number }
   /**
    * The layout's slot rectangles.
@@ -65,6 +67,13 @@ export interface RenderModel {
    * from the items would guess at the region's real bounds.
    */
   readonly slots: Readonly<Record<string, Rect>>
+  /**
+   * Every placed element's rectangle, including ones currently invisible.
+   *
+   * A connector needs both endpoints even when one has not been revealed yet, and it must
+   * not have to search the item list — which only holds what is on screen.
+   */
+  readonly rects: Readonly<Record<string, Rect>>
   /** Visible items only, sorted back to front. */
   readonly items: readonly RenderItem[]
   readonly caption?: RenderCaption
@@ -90,8 +99,10 @@ export function frame(program: Program, t: number): RenderModel {
       sceneIndex: -1,
       tScene: 0,
       sceneStart: 0,
+      aspect: program.aspect,
       canvas: program.canvas,
       slots: {},
+      rects: {},
       items: [],
       theme: program.document.theme,
       strings: program.bundle.strings,
@@ -100,6 +111,8 @@ export function frame(program: Program, t: number): RenderModel {
 
   const tScene = clampToSlot(t, slot.start, slot.end)
   const items: RenderItem[] = []
+  const rects: Record<string, Rect> = {}
+  for (const placement of slot.layout.placements) rects[placement.id] = placement.rect
 
   for (const placement of slot.layout.placements) {
     const pose = slot.timeline.poseAt(placement.id, tScene)
@@ -138,8 +151,10 @@ export function frame(program: Program, t: number): RenderModel {
     sceneIndex: slot.index,
     tScene,
     sceneStart: slot.start,
+    aspect: program.aspect,
     canvas: program.canvas,
     slots: slot.layout.slots,
+    rects,
     items,
     theme: program.document.theme,
     strings: program.bundle.strings,

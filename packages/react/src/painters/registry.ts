@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { createRegistry, type Registry } from '@bingoo.ai/explainer-kernel'
-import type { RenderItem, ResolvedProfiles } from '@bingoo.ai/explainer-core'
+import type { Rect, RenderItem, ResolvedProfiles } from '@bingoo.ai/explainer-core'
 import { z } from 'zod'
 import type { ComponentType } from 'react'
 
@@ -21,6 +21,13 @@ export interface PainterProps {
   readonly strings: Readonly<Record<string, string>>
   readonly profiles: ResolvedProfiles
   readonly canvas: { readonly width: number; readonly height: number }
+  /**
+   * Every placed element's rectangle.
+   *
+   * A connector needs both endpoints even when one is not on screen yet, so it cannot work
+   * from the item list alone.
+   */
+  readonly rects: Readonly<Record<string, Rect>>
 }
 
 export type Painter = ComponentType<PainterProps>

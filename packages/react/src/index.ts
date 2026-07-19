@@ -9,6 +9,9 @@
  */
 
 export { Stage, type StageProps } from './Stage.js'
+export { Transport, type TransportProps } from './Transport.js'
+export { useSpeechClock, type SpeechOptions } from './speech.js'
+export { Backdrop, type BackdropKind, type BackdropProps } from './chrome/Backdrop.js'
 export { ExplainerPlayer, type ExplainerPlayerProps } from './ExplainerPlayer.js'
 export { usePlayer, type AudioClock, type Player, type UsePlayerOptions } from './usePlayer.js'
 
@@ -24,17 +27,22 @@ export {
 
 export {
   ChartPainter,
+  ConnectorPainter,
+  DiagramPainter,
   ImagePainter,
   ListPainter,
   QuotePainter,
   ShapePainter,
   StatPainter,
+  StickPainter,
   StrokePainter,
   TablePainter,
   TextPainter,
   createBuiltInPainters,
 } from './painters/builtin.js'
 
+export { centreOf, edgePoint, type Point } from './painters/connector.js'
+export { type FaceExpression } from './painters/stick.js'
 export { Marker, type MarkerProps, type MarkerStyle } from './painters/marker.js'
 export { formatValue, niceMax, scaleOf, type ChartScale, type Series } from './painters/chart/scale.js'
 

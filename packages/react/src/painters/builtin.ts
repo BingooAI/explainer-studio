@@ -11,6 +11,9 @@ import { TablePainter } from './table.js'
 import { ChartPainter } from './chart/index.js'
 import { StatPainter } from './stat.js'
 import { QuotePainter } from './quote.js'
+import { StickPainter } from './stick.js'
+import { DiagramPainter } from './diagram.js'
+import { ConnectorPainter } from './connector.js'
 
 /**
  * The built-in painters.
@@ -31,12 +34,18 @@ export function createBuiltInPainters(): PainterRegistry {
   registerPainter(registry, { id: 'chart', label: 'Chart' }, ChartPainter)
   registerPainter(registry, { id: 'stat', label: 'Statistic' }, StatPainter)
   registerPainter(registry, { id: 'quote', label: 'Quotation' }, QuotePainter)
+  registerPainter(registry, { id: 'stick', label: 'Character' }, StickPainter)
+  registerPainter(registry, { id: 'diagram', label: 'Diagram' }, DiagramPainter)
+  registerPainter(registry, { id: 'connector', label: 'Connector' }, ConnectorPainter)
 
   return registry
 }
 
 export {
   ChartPainter,
+  ConnectorPainter,
+  DiagramPainter,
+  StickPainter,
   ImagePainter,
   ListPainter,
   QuotePainter,
