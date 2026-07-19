@@ -9,9 +9,7 @@
  */
 
 export { Stage, type StageProps } from './Stage.js'
-
 export { ExplainerPlayer, type ExplainerPlayerProps } from './ExplainerPlayer.js'
-
 export { usePlayer, type AudioClock, type Player, type UsePlayerOptions } from './usePlayer.js'
 
 export {
@@ -24,6 +22,34 @@ export {
   type PainterRegistry,
 } from './painters/registry.js'
 
-export { ImagePainter, ShapePainter, TextPainter, createBuiltInPainters } from './painters/builtin.js'
+export {
+  ChartPainter,
+  ImagePainter,
+  ListPainter,
+  QuotePainter,
+  ShapePainter,
+  StatPainter,
+  StrokePainter,
+  TablePainter,
+  TextPainter,
+  createBuiltInPainters,
+} from './painters/builtin.js'
 
+export { Marker, type MarkerProps, type MarkerStyle } from './painters/marker.js'
+export { formatValue, niceMax, scaleOf, type ChartScale, type Series } from './painters/chart/scale.js'
+
+export { CaptionBand, type CaptionBandProps } from './chrome/CaptionBand.js'
+export { CARD_SLOTS, SlotCard, type SlotCardProps } from './chrome/SlotCard.js'
+
+export {
+  CHART_PALETTE,
+  color,
+  createThemeRegistry,
+  defaultTheme,
+  themeDescriptor,
+  type ThemeRegistry,
+  type ThemeTokens,
+} from './theme/tokens.js'
+
+export { charsPerLine, fitText, widthOf, wrapText, type FitResult, type Metrics } from './text/wrap.js'
 export { anchorFor, transformFor } from './transform.js'
