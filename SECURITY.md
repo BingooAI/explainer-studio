@@ -67,8 +67,9 @@ document, an export, a client bundle, or a log.
 
 ## Our practices
 
-Every pull request runs CodeQL, secret scanning, a dependency audit and a licence
-compatibility check. GitHub Actions are pinned by commit SHA. Releases carry a CycloneDX
+Every pull request runs CodeQL, a dependency audit and a licence compatibility check.
+Secret scanning with push protection is enabled on the repository, so a credential is
+rejected before it can be committed rather than found after it is published. GitHub Actions are pinned by commit SHA. Releases carry a CycloneDX
 SBOM, Sigstore signatures and npm provenance. Two-factor authentication is required on the
 organisation and on npm.
 

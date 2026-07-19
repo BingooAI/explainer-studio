@@ -376,9 +376,12 @@ Four untrusted inputs, and they are the ones to design against:
 
 ### Automated in CI, on every PR
 
-- **CodeQL** (SAST) · **gitleaks** (secret scanning) · **dependency audit** ·
-  **licence compatibility check** — a dependency that is not Apache-2.0-compatible fails the
-  build rather than being noticed at release.
+- **CodeQL** (SAST) · **dependency audit** · **licence compatibility check** — a dependency
+  that is not Apache-2.0-compatible fails the build rather than being noticed at release.
+- **Secret scanning with push protection** is GitHub's native feature, enabled in repository
+  settings rather than as a workflow step. Push protection rejects a secret before it
+  reaches the repository, which is the only moment the problem is still cheap; scanning
+  afterwards means the credential is already published and must be rotated.
 - GitHub Actions **pinned by commit SHA**; Dependabot for updates.
 - **CycloneDX SBOM** and **Sigstore signing** per release; npm provenance on publish.
 
