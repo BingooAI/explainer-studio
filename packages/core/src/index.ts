@@ -140,3 +140,24 @@ export {
   type CharBudgetOptions,
   type FontSize,
 } from './layout/type-scale.js'
+
+export { LINEAR, clamp01, ease } from './motion/easing.js'
+
+export { composePose, hiddenPose, lerp, lerpPose, restingPose } from './motion/pose.js'
+
+export {
+  builtInEmphasis,
+  createEmphasisRegistry,
+  emphasisAt,
+  emphasisDescriptor,
+  type EmphasisDescriptor,
+  type EmphasisRegistry,
+  type Keyframe,
+} from './motion/emphasis.js'
+
+export {
+  compileScene,
+  type CompileSceneOptions,
+  type SceneTimeline,
+  type SoundCue,
+} from './motion/choreograph.js'
