@@ -203,3 +203,24 @@ describe('createRegistry', () => {
     })
   })
 })
+
+describe('KernelError', () => {
+  it('folds the location and hint into the message', () => {
+    // `.message` is what a stack trace and most loggers show. A hint kept only as a
+    // property is a hint most readers never see, which defeats the point of writing one.
+    const registry = newRegistry()
+    registry.register(entry('anthropic'))
+
+    try {
+      registry.get('openai')
+      expect.unreachable('get should have thrown')
+    } catch (error) {
+      expect(isKernelError(error)).toBe(true)
+      if (!isKernelError(error)) return
+      expect(error.message).toContain('openai')
+      expect(error.message).toContain('anthropic')
+      // The structured parts stay available for callers that want to branch on them.
+      expect(isKernelError(error) && error.code).toBe('REGISTRY_UNKNOWN_ID')
+    }
+  })
+})

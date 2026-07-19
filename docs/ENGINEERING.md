@@ -69,7 +69,7 @@
 | **R16** | **The packages must stay embeddable.** No module-level singletons — the registry is an instance you construct, so two lessons or two tenants never share state. `"sideEffects": false`; `react` as a peer dependency; no ambient `process.env`, global fetch interception or assumed origin. A document stores media *references*, never a bucket-specific URL. See ARCHITECTURE §13. |
 | **R17** | **Agents loop only where a deterministic verifier closes the loop** — and an agent is never the verifier (R2). Every loop is hard-bounded: max iterations, token budget, wall-clock, cost ceiling. No agent has side effects; agents propose, the pipeline persists after gates. Extended thinking is a declared provider capability, never a requirement — no stage may work only on a frontier model. No agent-framework dependency. See ARCHITECTURE §8. |
 | **R18** | **The teacher approves the brief before generation runs.** Objectives and facts are proposed, never assumed. Uploaded material is untrusted input — prompt injection through a PDF is a real path. The teacher owns *what* is taught; the studio owns *how* it is staged. |
-| **R19** | **Done means green.** `pnpm lint && pnpm typecheck && pnpm test && pnpm build` all pass. See §10. |
+| **R19** | **Done means green.** `pnpm check` passes — build, then lint, typecheck and test. Build comes first because packages resolve each other through `dist/`; checking before building silently degrades every cross-package type to `any`. See §10. |
 
 ---
 
@@ -412,11 +412,11 @@ Before reporting any change complete:
 
 - [ ] **Searched and reused** existing modules — no duplication (§0.2).
 - [ ] **Impact assessed** on shared schemas, ports, registries and profiles (§0.3).
+- [ ] `pnpm build` — passes. Run it first; the checks below depend on its output.
 - [ ] `pnpm lint` — 0 errors.
 - [ ] `pnpm typecheck` — passes in every package.
 - [ ] `pnpm test` — passes; new logic has tests. Pure packages have deterministic golden
       tests.
-- [ ] `pnpm build` — passes.
 - [ ] **Self-tested end-to-end** — real run, happy path + edge cases (§0.5).
 - [ ] **Localhost guarantee intact** (R9) — still works with no key and no network.
 - [ ] Nothing hardcoded that belongs in a registry, profile or config (R1); no new vendor

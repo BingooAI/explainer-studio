@@ -34,11 +34,19 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+      # Build first. Packages resolve each other through their published `types` entry,
+      # which points into dist/, so linting or typechecking a clean checkout before
+      # building leaves every cross-package type unresolvable — and reports it as ~70
+      # "unsafe any" errors rather than as the missing build it actually is.
+      #
+      # Checking against dist/ rather than src/ is the deliberate choice: it is the shape
+      # consumers actually get, and this project's whole premise is that the packages work
+      # when published. Turbo caches the build, so the cost is paid once.
+      - run: pnpm build
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
-      - run: pnpm build
 
   # R9 (the keyless localhost guarantee) is a tested promise, not an aspiration: the studio
   # must start and serve a lesson with no provider configured and no outbound network.
