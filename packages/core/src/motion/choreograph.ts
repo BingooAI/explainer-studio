@@ -159,6 +159,13 @@ export function compileScene(scene: Scene, options: CompileSceneOptions): SceneT
       const track = tracks.get(elementId)
       if (!track) return 0
 
+      // Progressive reveal is opt-in. An element nobody choreographed shows everything —
+      // an author who writes a chart and no beats expects to see the chart, not an empty
+      // panel. Returning 0 here made every un-choreographed list, table and chart render
+      // blank, and the renderers' own `?? 1` guards could not see the difference between
+      // "no build authored" and "build authored, nothing revealed yet".
+      if (track.itemReveals.length === 0) return Number.POSITIVE_INFINITY
+
       let count = 0
       for (const reveal of track.itemReveals) {
         if (reveal.at > t) break
@@ -246,14 +253,35 @@ function applyAction(
       return start + duration
     }
     case 'revealItem': {
+      revealHost(track, start, timing)
       track.itemReveals.push({ at: start, count: action.index + 1 })
       return start + timing.reveal.duration
     }
     case 'revealAll': {
+      revealHost(track, start, timing)
       track.itemReveals.push({ at: start, count: Number.POSITIVE_INFINITY })
       return start + timing.reveal.duration
     }
   }
+}
+
+/**
+ * Revealing an item implies revealing the thing it belongs to.
+ *
+ * Without this an author who writes `revealItem` and no `reveal` gets nothing at all: the
+ * element stays hidden, `frame` drops it, and the items they carefully sequenced are
+ * invisible. Nobody means "show the second bullet of a list that is not on screen".
+ *
+ * Applied once, on the first item reveal only, so a list does not re-fade on every point.
+ */
+function revealHost(track: Track, start: number, timing: TimingProfile): void {
+  if (track.initial.visible || track.itemReveals.length > 0) return
+  track.transitions.push({
+    start,
+    duration: timing.reveal.duration,
+    to: restingPose,
+    easing: timing.reveal.easing,
+  })
 }
 
 /**

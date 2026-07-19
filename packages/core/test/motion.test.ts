@@ -451,3 +451,52 @@ describe('createEmphasisRegistry', () => {
     expect([...createEmphasisRegistry().ids()].sort()).toEqual(['bounce', 'glow', 'pulse', 'shake'])
   })
 })
+
+describe('progressive reveal defaults', () => {
+  it('shows everything when nobody choreographed the element', () => {
+    // An author who writes a chart and no beats expects to see the chart. Returning 0 here
+    // made every un-choreographed list, table and chart render as an empty panel — and the
+    // renderers could not tell "no build authored" from "nothing revealed yet".
+    const scene = sceneOf([element('chart', true)], [])
+    expect(compile(scene).itemsAt('chart', 0)).toBe(Number.POSITIVE_INFINITY)
+  })
+
+  it('starts at nothing once a build is authored', () => {
+    const scene = sceneOf(
+      [element('list', true)],
+      [{ id: 'b1', cue: 'c1', actions: [{ verb: 'revealItem', target: 'list', index: 0 }] }],
+    )
+    const timeline = compile(scene, { c1: 2 })
+
+    expect(timeline.itemsAt('list', 0)).toBe(0)
+    expect(timeline.itemsAt('list', 2)).toBe(1)
+  })
+
+  it('reveals the element itself when its first item is revealed', () => {
+    // Nobody means "show the second bullet of a list that is not on screen". Without this
+    // the element stays hidden, frame drops it, and the sequenced items are invisible.
+    const scene = sceneOf(
+      [element('list')],
+      [{ id: 'b1', cue: 'c1', actions: [{ verb: 'revealItem', target: 'list', index: 0 }] }],
+    )
+    const timeline = compile(scene, { c1: 1 })
+
+    expect(timeline.poseAt('list', 0).visible).toBe(false)
+    expect(timeline.poseAt('list', 1 + houseTiming.reveal.duration).opacity).toBeCloseTo(1, 4)
+  })
+
+  it('does not re-fade the element on every subsequent item', () => {
+    const scene = sceneOf(
+      [element('list')],
+      [
+        { id: 'b1', cue: 'c1', actions: [{ verb: 'revealItem', target: 'list', index: 0 }] },
+        { id: 'b2', cue: 'c2', actions: [{ verb: 'revealItem', target: 'list', index: 1 }] },
+      ],
+    )
+    const timeline = compile(scene, { c1: 1, c2: 3 })
+
+    // Fully opaque before the second item and still fully opaque during it.
+    expect(timeline.poseAt('list', 2.5).opacity).toBeCloseTo(1, 4)
+    expect(timeline.poseAt('list', 3.1).opacity).toBeCloseTo(1, 4)
+  })
+})
