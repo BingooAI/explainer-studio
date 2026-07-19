@@ -30,17 +30,21 @@ export class KernelError extends Error {
   readonly hint: string | undefined
 
   constructor(code: KernelErrorCode, message: string, options: KernelErrorOptions = {}) {
-    super(options.at ? `${message} (at ${options.at})` : message, { cause: options.cause })
+    // `at` and `hint` are folded into the message rather than kept only as properties.
+    // `.message` is what appears in a stack trace and in nearly every logger, so a hint
+    // that lives outside it is a hint most readers never see — which defeats the point of
+    // writing one. The structured parts remain available for callers that want them.
+    super(compose(message, options), { cause: options.cause })
     this.name = 'KernelError'
     this.code = code
     this.at = options.at
     this.hint = options.hint
   }
+}
 
-  /** The message plus its hint, for surfaces that show a single string. */
-  get detail(): string {
-    return this.hint ? `${this.message} ${this.hint}` : this.message
-  }
+function compose(message: string, options: KernelErrorOptions): string {
+  const located = options.at ? `${message} (at ${options.at})` : message
+  return options.hint ? `${located} ${options.hint}` : located
 }
 
 export function isKernelError(value: unknown): value is KernelError {
