@@ -78,7 +78,7 @@ scenes have been generated and paid for takes a rebuild.
 
 ## Quick start
 
-Requires [Node.js](https://nodejs.org) 20.11+ and [pnpm](https://pnpm.io) 9+.
+Requires [Node.js](https://nodejs.org) 22+ and [pnpm](https://pnpm.io) 9+.
 
 ```bash
 git clone https://github.com/BingooAI/explainer-studio.git

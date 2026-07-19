@@ -12,7 +12,19 @@ import { KernelError } from './errors.js'
  * also what makes this testable without mutating global state.
  */
 
-const PATTERN = /\$\{([A-Za-z_][A-Za-z0-9_]*)(?::-([^}]*))?\}/g
+/**
+ * `${NAME}` or `${NAME:-fallback}`.
+ *
+ * The fallback excludes `{` as well as `}`, which matters for more than tidiness: with
+ * `[^}]*` the class could consume a following `${` sequence, so input like `${A:-` repeated
+ * many times forced quadratic backtracking — a polynomial ReDoS, flagged by CodeQL. Barring
+ * `{` means a nested `${` always terminates the class, so matching stays linear.
+ *
+ * The cost is that a fallback cannot itself contain `{`. That is an acceptable limit for a
+ * configuration default, and a far better trade than a parser that can be stalled by a
+ * hostile config file.
+ */
+const PATTERN = /\$\{([A-Za-z_][A-Za-z0-9_]*)(?::-([^{}]*))?\}/g
 
 export type EnvSource = Readonly<Record<string, string | undefined>>
 

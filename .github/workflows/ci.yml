@@ -16,7 +16,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '20.11'
+  # The floor declared in package.json engines. CI tests the floor deliberately:
+  # running only the newest version is how an unsupported-syntax bug reaches a user.
+  NODE_VERSION: '22'
 
 jobs:
   quality:
