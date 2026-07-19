@@ -100,7 +100,7 @@ jobs:
         with:
           languages: javascript-typescript
           queries: security-extended
-      - uses: github/codeql-action/analyze@f09c1c0a94de965c15400f5634aa42fac8fb8f88 # v3.27.5
+      - uses: github/codeql-action/analyze@7188fc363630916deb702c7fdcf4e481b751f97a # v4.37.1
 
   changeset:
     name: Changeset present
