@@ -10,7 +10,12 @@ import tseslint from 'typescript-eslint'
  * or the engine stops being testable and the renderers silently drift apart. CI enforces it
  * because a rule only written in a document erodes.
  */
-const PURE_PACKAGES = ['packages/core/**', 'packages/quality/**', 'packages/providers/**', 'packages/generator/**']
+const PURE_PACKAGES = [
+  'packages/core/**',
+  'packages/quality/**',
+  'packages/providers/**',
+  'packages/generator/**',
+]
 
 const FORBIDDEN_IN_PURE = [
   { name: 'react', message: 'Pure packages are platform-free (R7). Inject via a port.' },
@@ -22,11 +27,29 @@ const FORBIDDEN_IN_PURE = [
 ]
 
 export default tseslint.config(
-  { ignores: ['**/dist/**', '**/.next/**', '**/.turbo/**', '**/node_modules/**', '**/contract/**', '**/generated/**'] },
+  {
+    ignores: [
+      '**/dist/**',
+      '**/.next/**',
+      '**/.turbo/**',
+      '**/node_modules/**',
+      '**/contract/**',
+      '**/generated/**',
+    ],
+  },
 
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
+
+  // Root config files are not part of any tsconfig project, so type-aware rules cannot
+  // apply to them. Lint them as plain JS rather than excluding them entirely.
   {
+    files: ['**/*.mjs', '**/*.cjs', '*.js'],
+    ...tseslint.configs.disableTypeChecked,
+  },
+
+  {
+    files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
     },
@@ -51,9 +74,7 @@ export default tseslint.config(
         'error',
         {
           paths: FORBIDDEN_IN_PURE,
-          patterns: [
-            { group: ['next/*', 'node:*'], message: 'Pure packages are platform-free (R7).' },
-          ],
+          patterns: [{ group: ['next/*', 'node:*'], message: 'Pure packages are platform-free (R7).' }],
         },
       ],
       'no-restricted-globals': [
