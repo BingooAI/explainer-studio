@@ -2,47 +2,39 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Editing operations.
+ * The editor: the operation layer, and the panels built on it.
  *
- * Every change is a pure operation returning a new document and its inverse. Undo, redo,
- * version history and an audit trail all fall out of that pairing, and none of them can
- * drift from what actually happened — because the inverse is produced by the same code that
- * made the change, at the moment it still held the old value.
+ * Every panel here changes a lesson by dispatching an operation, never by mutating a
+ * document. That is what makes undo, history and an audit trail work for edits nobody has
+ * written yet — a kit that registers its own operation gets all three for free.
+ *
+ * A host that only needs the operations — a server applying an edit, a script running a
+ * migration — should import `@bingoo.ai/explainer-editor/ops` instead. That entry point is
+ * pure and pulls in no renderer.
  */
 
+export * from './ops.js'
+
+export { ExplainerStudio, type ExplainerStudioProps } from './ui/Studio.js'
+export { TopBar, DEFAULT_ASPECTS, type SaveState, type TopBarProps } from './ui/TopBar.js'
+export { SceneStrip } from './ui/SceneStrip.js'
+export { TrackTimeline, CLIP_COLORS, type TrackTimelineProps } from './ui/TrackTimeline.js'
+export { Inspector } from './ui/Inspector.js'
+export { EditableStage, type EditableStageProps } from './ui/EditableStage.js'
+
+export { EditorProvider, useActiveScene, useEditor, useStore } from './ui/context.js'
+export { RenderProvider, useRender, type RenderContextValue, type StudioRegistries } from './ui/render.js'
 export {
-  applyAll,
-  createOpRegistry,
-  registerBatch,
-  type EditOp,
-  type OpHandler,
-  type OpRegistry,
-  type OpResult,
-} from './op.js'
+  createEditorStore,
+  DEFAULT_ASPECT,
+  type CreateStoreOptions,
+  type EditorSnapshot,
+  type EditorStore,
+  type Selection,
+  type UIState,
+} from './ui/store.js'
+export { useScenePlayback, type ScenePlayback } from './ui/useScenePlayback.js'
+export { ensureEditorStyles, editorStyles, EDITOR_PREFIX } from './ui/styles.js'
+export { generateId, stringKeyFor } from './ui/ids.js'
 
-export { registerSceneOps } from './ops/scene.js'
-export { registerElementOps } from './ops/element.js'
-
-export {
-  canRedo,
-  canUndo,
-  commit,
-  initialHistory,
-  redo,
-  undo,
-  type HistoryLimits,
-  type HistoryState,
-} from './history.js'
-
-import { createOpRegistry, registerBatch, type OpRegistry } from './op.js'
-import { registerElementOps } from './ops/element.js'
-import { registerSceneOps } from './ops/scene.js'
-
-/** A registry with the built-in operations. An instance, never shared state (R16). */
-export function createEditor(): OpRegistry {
-  const registry = createOpRegistry()
-  registerBatch(registry)
-  registerSceneOps(registry)
-  registerElementOps(registry)
-  return registry
-}
+export { Field, NumberField, SelectField, Segmented, TextField, type Choice } from './ui/fields.js'

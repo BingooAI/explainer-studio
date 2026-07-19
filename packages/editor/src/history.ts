@@ -1,8 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Bingoo.ai
 // SPDX-License-Identifier: Apache-2.0
 
-import type { ExplainerDocument } from '@bingoo.ai/explainer-core'
-import type { EditOp, OpRegistry } from './op.js'
+import type { EditOp, OpRegistry, Workspace } from './op.js'
 
 /**
  * Undo and redo, built entirely from the inverses the operations already produced.
@@ -18,15 +17,15 @@ import type { EditOp, OpRegistry } from './op.js'
  */
 
 export interface HistoryState {
-  readonly document: ExplainerDocument
+  readonly workspace: Workspace
   /** Inverses of what has been done, most recent last. */
   readonly past: readonly EditOp[]
   /** Operations undone and available to redo, most recent last. */
   readonly future: readonly EditOp[]
 }
 
-export function initialHistory(document: ExplainerDocument): HistoryState {
-  return { document, past: [], future: [] }
+export function initialHistory(workspace: Workspace): HistoryState {
+  return { workspace, past: [], future: [] }
 }
 
 export interface HistoryLimits {
@@ -47,12 +46,12 @@ export function commit(
   op: EditOp,
   limits: HistoryLimits = {},
 ): HistoryState {
-  const result = registry.apply(state.document, op)
+  const result = registry.apply(state.workspace, op)
   const depth = limits.depth ?? 200
   const past = [...state.past, result.inverse]
 
   return {
-    document: result.document,
+    workspace: result.workspace,
     past: past.length > depth ? past.slice(past.length - depth) : past,
     future: [],
   }
@@ -62,9 +61,9 @@ export function undo(registry: OpRegistry, state: HistoryState): HistoryState {
   const inverse = state.past[state.past.length - 1]
   if (!inverse) return state
 
-  const result = registry.apply(state.document, inverse)
+  const result = registry.apply(state.workspace, inverse)
   return {
-    document: result.document,
+    workspace: result.workspace,
     past: state.past.slice(0, -1),
     // The inverse of the inverse is the original operation, so redo needs no separate
     // record — and cannot disagree with what undo actually did.
@@ -76,9 +75,9 @@ export function redo(registry: OpRegistry, state: HistoryState): HistoryState {
   const op = state.future[state.future.length - 1]
   if (!op) return state
 
-  const result = registry.apply(state.document, op)
+  const result = registry.apply(state.workspace, op)
   return {
-    document: result.document,
+    workspace: result.workspace,
     past: [...state.past, result.inverse],
     future: state.future.slice(0, -1),
   }

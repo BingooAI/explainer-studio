@@ -3,7 +3,9 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "dist",
-    "types": []
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vitest/globals"]
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "*.config.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "test/**/*.ts", "test/**/*.tsx", "*.config.ts"]
 }

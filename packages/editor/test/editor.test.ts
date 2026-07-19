@@ -1,7 +1,13 @@
 // SPDX-FileCopyrightText: 2026 Bingoo.ai
 // SPDX-License-Identifier: Apache-2.0
 
-import { defaultPins, type Element, type ExplainerDocument, type Scene } from '@bingoo.ai/explainer-core'
+import {
+  defaultPins,
+  type Element,
+  type ExplainerDocument,
+  type LocaleBundle,
+  type Scene,
+} from '@bingoo.ai/explainer-core'
 import { isKernelError } from '@bingoo.ai/explainer-kernel'
 import { describe, expect, it } from 'vitest'
 import {
@@ -14,7 +20,8 @@ import {
   initialHistory,
   redo,
   undo,
-} from '../src/index.js'
+  type Workspace,
+} from '../src/ops.js'
 
 const element = (id: string, region = 'stage'): Element => ({
   id,
@@ -48,13 +55,24 @@ const doc = (scenes: Scene[]): ExplainerDocument => ({
   scenes,
 })
 
+const bundle: LocaleBundle = {
+  version: 'explainer-bundle/v1',
+  documentId: 'demo',
+  locale: 'en',
+  strings: {},
+  narration: {},
+}
+
+/** The unit an operation acts on: structure plus words. */
+const space = (scenes: Scene[]): Workspace => ({ document: doc(scenes), bundles: { en: bundle } })
+
 describe('operations', () => {
   const editor = createEditor()
 
   it('does not mutate the document it was given', () => {
     // The property an editor's history depends on: a document you still hold is unchanged,
     // so a past state can be kept in a plain array without defensive copying.
-    const before = doc([scene('one')])
+    const before = space([scene('one')])
     const snapshot = JSON.stringify(before)
 
     editor.apply(before, { kind: 'scene.remove', id: 'one' })
@@ -63,26 +81,26 @@ describe('operations', () => {
   })
 
   describe('every operation round-trips through its inverse', () => {
-    const cases: Array<[string, ExplainerDocument, EditOp]> = [
-      ['scene.add', doc([scene('one')]), { kind: 'scene.add', scene: scene('two'), at: 0 }],
-      ['scene.remove', doc([scene('one'), scene('two')]), { kind: 'scene.remove', id: 'one' }],
-      ['scene.move', doc([scene('a'), scene('b'), scene('c')]), { kind: 'scene.move', id: 'a', to: 2 }],
-      ['scene.setPhase', doc([scene('one')]), { kind: 'scene.setPhase', id: 'one', phase: 'recap' }],
+    const cases: Array<[string, Workspace, EditOp]> = [
+      ['scene.add', space([scene('one')]), { kind: 'scene.add', scene: scene('two'), at: 0 }],
+      ['scene.remove', space([scene('one'), scene('two')]), { kind: 'scene.remove', id: 'one' }],
+      ['scene.move', space([scene('a'), scene('b'), scene('c')]), { kind: 'scene.move', id: 'a', to: 2 }],
+      ['scene.setPhase', space([scene('one')]), { kind: 'scene.setPhase', id: 'one', phase: 'recap' }],
       [
         'scene.setTemplate',
-        doc([scene('one')]),
+        space([scene('one')]),
         { kind: 'scene.setTemplate', id: 'one', template: 'bullets' },
       ],
-      ['element.add', doc([scene('one')]), { kind: 'element.add', sceneId: 'one', element: element('b') }],
-      ['element.remove', doc([scene('one')]), { kind: 'element.remove', sceneId: 'one', id: 'a' }],
+      ['element.add', space([scene('one')]), { kind: 'element.add', sceneId: 'one', element: element('b') }],
+      ['element.remove', space([scene('one')]), { kind: 'element.remove', sceneId: 'one', id: 'a' }],
       [
         'element.setContent',
-        doc([scene('one')]),
+        space([scene('one')]),
         { kind: 'element.setContent', sceneId: 'one', id: 'a', content: { key: 'k.changed' } },
       ],
       [
         'element.move',
-        doc([
+        space([
           scene('one', {
             elements: [element('a', 'left')],
             layout: { template: 'two-col', regions: { left: ['a'], right: [] }, overrides: {} },
@@ -94,34 +112,34 @@ describe('operations', () => {
 
     it.each(cases)('%s', (_name, input, op) => {
       const forward = editor.apply(input, op)
-      const back = editor.apply(forward.document, forward.inverse)
+      const back = editor.apply(forward.workspace, forward.inverse)
 
       // Deep equality, not "close enough": an inverse that restores a document which merely
       // looks right is how an undo silently corrupts a lesson.
-      expect(back.document).toEqual(input)
+      expect(back.workspace).toEqual(input)
     })
   })
 
   it('removes the beats that referred to a deleted element, and brings them back', () => {
     // Leaving them behind produces a document the lint gate rejects, from an action the
     // author had every reason to think was safe.
-    const before = doc([scene('one')])
+    const before = space([scene('one')])
     const removed = editor.apply(before, { kind: 'element.remove', sceneId: 'one', id: 'a' })
 
-    expect(removed.document.scenes[0]!.beats[0]!.actions).toHaveLength(0)
-    expect(editor.apply(removed.document, removed.inverse).document).toEqual(before)
+    expect(removed.workspace.document.scenes[0]!.beats[0]!.actions).toHaveLength(0)
+    expect(editor.apply(removed.workspace, removed.inverse).workspace).toEqual(before)
   })
 
   it('keeps the region list in step when an element is added', () => {
     // An element the layout never places is invisible, and the document is still valid —
     // exactly the silent failure the layout gate reports.
-    const after = editor.apply(doc([scene('one')]), {
+    const after = editor.apply(space([scene('one')]), {
       kind: 'element.add',
       sceneId: 'one',
       element: element('b'),
     })
 
-    expect(after.document.scenes[0]!.layout.regions['stage']).toEqual(['a', 'b'])
+    expect(after.workspace.document.scenes[0]!.layout.regions['stage']).toEqual(['a', 'b'])
   })
 
   it('reverses a move using where the element actually was, not what it claims', () => {
@@ -129,7 +147,7 @@ describe('operations', () => {
     // `layout.regions` lists the members. The layout decides where it is drawn, so the
     // layout is what a move must reverse — trusting the field returns it somewhere it
     // never was, and the undo looks like it worked.
-    const drifted = doc([
+    const drifted = space([
       scene('one', {
         elements: [element('a', 'stage')],
         layout: { template: 'two-col', regions: { left: ['a'], right: [] }, overrides: {} },
@@ -137,23 +155,23 @@ describe('operations', () => {
     ])
 
     const moved = editor.apply(drifted, { kind: 'element.move', sceneId: 'one', id: 'a', region: 'right' })
-    const back = editor.apply(moved.document, moved.inverse)
+    const back = editor.apply(moved.workspace, moved.inverse)
 
-    expect(back.document.scenes[0]!.layout.regions).toEqual({ left: ['a'], right: [] })
+    expect(back.workspace.document.scenes[0]!.layout.regions).toEqual({ left: ['a'], right: [] })
   })
 
   it('clamps an out-of-range move rather than refusing it', () => {
     // Overshooting the end of a list while dragging means "put it last", which is what the
     // person doing the dragging intended.
-    const after = editor.apply(doc([scene('a'), scene('b')]), { kind: 'scene.move', id: 'a', to: 99 })
+    const after = editor.apply(space([scene('a'), scene('b')]), { kind: 'scene.move', id: 'a', to: 99 })
 
-    expect(after.document.scenes.map((s) => s.id)).toEqual(['b', 'a'])
+    expect(after.workspace.document.scenes.map((s) => s.id)).toEqual(['b', 'a'])
   })
 
   describe('failure modes', () => {
     it('names the scenes that exist when an id is unknown', () => {
       try {
-        editor.apply(doc([scene('one')]), { kind: 'scene.remove', id: 'ghost' })
+        editor.apply(space([scene('one')]), { kind: 'scene.remove', id: 'ghost' })
         expect.unreachable('should have thrown')
       } catch (error) {
         expect(isKernelError(error)).toBe(true)
@@ -164,7 +182,7 @@ describe('operations', () => {
 
     it('rejects an unregistered operation and lists what is available', () => {
       try {
-        editor.apply(doc([scene('one')]), { kind: 'scene.explode' })
+        editor.apply(space([scene('one')]), { kind: 'scene.explode' })
         expect.unreachable('should have thrown')
       } catch (error) {
         expect(isKernelError(error) && error.hint).toContain('scene.add')
@@ -173,10 +191,10 @@ describe('operations', () => {
 
     it('refuses to register the same kind twice', () => {
       const registry = createOpRegistry()
-      registry.register('x', (d) => ({ document: d, inverse: { kind: 'x' } }))
+      registry.register('x', (w) => ({ workspace: w, inverse: { kind: 'x' } }))
 
       expect(() => {
-        registry.register('x', (d) => ({ document: d, inverse: { kind: 'x' } }))
+        registry.register('x', (w) => ({ workspace: w, inverse: { kind: 'x' } }))
       }).toThrowError(/already registered/i)
     })
   })
@@ -185,8 +203,8 @@ describe('operations', () => {
     // The acceptance test for the design (R1): a kit that adds an element type will want
     // operations for editing it, and those must not require a change here.
     const registry = createEditor()
-    registry.register('kit:fraction-bar.setParts', (document, op) => ({
-      document,
+    registry.register('kit:fraction-bar.setParts', (workspace, op) => ({
+      workspace,
       inverse: { kind: 'kit:fraction-bar.setParts', parts: op['parts'] },
     }))
 
@@ -200,7 +218,7 @@ describe('batch', () => {
   it('undoes a compound edit in one step, in reverse order', () => {
     // Undoing a sequence means walking back out of it. The wrong order produces an undo
     // that appears to work and leaves the document subtly wrong.
-    const before = doc([scene('one')])
+    const before = space([scene('one')])
     const result = editor.apply(before, {
       kind: 'batch',
       ops: [
@@ -210,22 +228,22 @@ describe('batch', () => {
       ],
     })
 
-    expect(result.document.scenes[0]!.elements).toHaveLength(3)
-    expect(editor.apply(result.document, result.inverse).document).toEqual(before)
+    expect(result.workspace.document.scenes[0]!.elements).toHaveLength(3)
+    expect(editor.apply(result.workspace, result.inverse).workspace).toEqual(before)
   })
 })
 
 describe('history', () => {
   const editor = createEditor()
-  const start = () => initialHistory(doc([scene('one')]))
+  const start = () => initialHistory(space([scene('one')]))
 
   it('undoes and redoes back to the same document', () => {
     const before = start()
     const edited = commit(editor, before, { kind: 'scene.setPhase', id: 'one', phase: 'recap' })
 
-    expect(edited.document.scenes[0]!.phase).toBe('recap')
-    expect(undo(editor, edited).document).toEqual(before.document)
-    expect(redo(editor, undo(editor, edited)).document).toEqual(edited.document)
+    expect(edited.workspace.document.scenes[0]!.phase).toBe('recap')
+    expect(undo(editor, edited).workspace).toEqual(before.workspace)
+    expect(redo(editor, undo(editor, edited)).workspace).toEqual(edited.workspace)
   })
 
   it('reports what is available', () => {
@@ -260,7 +278,7 @@ describe('history', () => {
       state = undo(editor, state)
     }
 
-    expect(state.document).toEqual(start().document)
+    expect(state.workspace).toEqual(start().workspace)
     expect(canUndo(state)).toBe(false)
   })
 

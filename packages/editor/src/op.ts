@@ -1,8 +1,21 @@
 // SPDX-FileCopyrightText: 2026 Bingoo.ai
 // SPDX-License-Identifier: Apache-2.0
 
-import type { ExplainerDocument } from '@bingoo.ai/explainer-core'
+import type { ExplainerDocument, LocaleBundle } from '@bingoo.ai/explainer-core'
 import { KernelError } from '@bingoo.ai/explainer-kernel'
+
+/**
+ * What an edit can change.
+ *
+ * A lesson is a document *and* its locale bundles: the structure says there is a caption
+ * here, the bundle says what it reads. Editing text is the commonest edit there is, so both
+ * have to move under one history — with two, undo after "rename the heading, then reorder
+ * the scenes" walks back through them in an order that belongs to neither.
+ */
+export interface Workspace {
+  readonly document: ExplainerDocument
+  readonly bundles: Readonly<Record<string, LocaleBundle>>
+}
 
 /**
  * Every edit is a pure operation that returns a new document **and its inverse**.
@@ -22,8 +35,8 @@ import { KernelError } from '@bingoo.ai/explainer-kernel'
  */
 
 export interface OpResult {
-  readonly document: ExplainerDocument
-  /** Applying this to `document` restores the input exactly. */
+  readonly workspace: Workspace
+  /** Applying this to `workspace` restores the input exactly. */
   readonly inverse: EditOp
 }
 
@@ -39,7 +52,7 @@ export interface EditOp {
   readonly [key: string]: unknown
 }
 
-export type OpHandler = (document: ExplainerDocument, op: EditOp) => OpResult
+export type OpHandler = (workspace: Workspace, op: EditOp) => OpResult
 
 /**
  * Reads a required string field from an op.
@@ -73,10 +86,26 @@ function describe(value: unknown): string {
   return typeof value
 }
 
+/**
+ * Lifts an operation that only changes structure.
+ *
+ * Most do: reordering scenes has nothing to say about locale bundles. Writing them against
+ * the document keeps them honest about what they touch, and means a bundle cannot be
+ * altered by an operation that never meant to.
+ */
+export function documentOp(
+  handler: (document: ExplainerDocument, op: EditOp) => { document: ExplainerDocument; inverse: EditOp },
+): OpHandler {
+  return (workspace, op) => {
+    const { document, inverse } = handler(workspace.document, op)
+    return { workspace: { ...workspace, document }, inverse }
+  }
+}
+
 export interface OpRegistry {
   register(kind: string, handler: OpHandler): void
   has(kind: string): boolean
-  apply(document: ExplainerDocument, op: EditOp): OpResult
+  apply(workspace: Workspace, op: EditOp): OpResult
   kinds(): readonly string[]
 }
 
@@ -105,7 +134,7 @@ export function createOpRegistry(): OpRegistry {
       return handlers.has(kind)
     },
 
-    apply(document, op) {
+    apply(workspace, op) {
       const handler = handlers.get(op.kind)
       if (!handler) {
         throw new KernelError('REGISTRY_UNKNOWN_ID', 'No editing operation is registered under this kind.', {
@@ -113,7 +142,7 @@ export function createOpRegistry(): OpRegistry {
           hint: `Registered operations: ${[...handlers.keys()].join(', ') || 'none'}.`,
         })
       }
-      return handler(document, op)
+      return handler(workspace, op)
     },
 
     kinds() {
@@ -130,27 +159,23 @@ export function createOpRegistry(): OpRegistry {
  * and leaves the document subtly wrong — the ops still apply, they just apply against
  * states that no longer exist.
  */
-export function applyAll(
-  registry: OpRegistry,
-  document: ExplainerDocument,
-  ops: readonly EditOp[],
-): OpResult {
-  let current = document
+export function applyAll(registry: OpRegistry, workspace: Workspace, ops: readonly EditOp[]): OpResult {
+  let current = workspace
   const inverses: EditOp[] = []
 
   for (const op of ops) {
     const result = registry.apply(current, op)
-    current = result.document
+    current = result.workspace
     inverses.unshift(result.inverse)
   }
 
-  return { document: current, inverse: { kind: 'batch', ops: inverses } }
+  return { workspace: current, inverse: { kind: 'batch', ops: inverses } }
 }
 
 /** Registers `batch`, so a compound edit is itself an op and undoes in one step. */
 export function registerBatch(registry: OpRegistry): void {
-  registry.register('batch', (document, op) => {
+  registry.register('batch', (workspace, op) => {
     const ops = Array.isArray(op['ops']) ? (op['ops'] as EditOp[]) : []
-    return applyAll(registry, document, ops)
+    return applyAll(registry, workspace, ops)
   })
 }
