@@ -1,0 +1,57 @@
+name: Bug report
+description: Something does not work as expected
+labels: ['bug', 'needs-triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Security issues do not belong here** — see [SECURITY.md](../blob/main/SECURITY.md)
+        and report them privately.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, and what happened instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: Steps, or better still a failing test. A failing test is the most useful bug report there is.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+    validations:
+      required: true
+
+  - type: dropdown
+    id: how-running
+    attributes:
+      label: How are you running it
+      options:
+        - From source (pnpm dev)
+        - Docker
+        - Desktop app
+        - As an npm package in my own project
+    validations:
+      required: true
+
+  - type: textarea
+    id: providers
+    attributes:
+      label: Providers configured
+      description: Which LLM, voice, image and storage providers — or none. Never paste an API key.
+      placeholder: e.g. Ollama (qwen2.5:14b), browser voice, filesystem storage
+
+  - type: input
+    id: environment
+    attributes:
+      label: OS and Node version
+      placeholder: macOS 15.2, Node 20.11

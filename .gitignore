@@ -1,0 +1,73 @@
+# Dependencies
+node_modules/
+.pnp.*
+.yarn/*
+
+# Build output
+dist/
+build/
+out/
+.next/
+.turbo/
+*.tsbuildinfo
+storybook-static/
+
+# Generated — regenerate, never edit or commit (ENGINEERING.md §5)
+contract/
+generated/
+coverage/
+*.lcov
+
+# Secrets — never commit (R12)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!packages/**/src/**/*.key.ts
+explainer.config.local.yaml
+
+# Local data — a self-hosted install writes here (R9 default is SQLite + filesystem)
+/data/
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+/media/
+/uploads/
+
+# Generated media — expensive to make, but derived; never source of truth
+/exports/
+*.mp4
+*.webm
+*.mp3
+*.wav
+!docs/**/*.mp4
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.recommended.json
+*.swp
+*~
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+logs/
+
+# Test / tooling caches
+.vitest/
+.eslintcache
+.prettiercache
+playwright-report/
+test-results/
+
+# Desktop packaging (Phase 5)
+src-tauri/target/
+release/

@@ -1,0 +1,46 @@
+{
+  "name": "explainer-studio",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Open-source studio that turns a lesson brief into an editable explainer video.",
+  "homepage": "https://github.com/BingooAI/explainer-studio",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BingooAI/explainer-studio.git"
+  },
+  "bugs": "https://github.com/BingooAI/explainer-studio/issues",
+  "license": "Apache-2.0",
+  "author": "Bingoo.ai (https://bingoo.ai)",
+  "engines": {
+    "node": ">=20.11",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "turbo run build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.10",
+    "@eslint/js": "^9.17.0",
+    "@types/node": "^22.10.2",
+    "eslint": "^9.17.0",
+    "prettier": "^3.4.2",
+    "tsup": "^8.3.5",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.1",
+    "vitest": "^2.1.8"
+  }
+}

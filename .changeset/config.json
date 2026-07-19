@@ -1,0 +1,11 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
+  "changelog": ["@changesets/changelog-github", { "repo": "BingooAI/explainer-studio" }],
+  "commit": false,
+  "fixed": [["@bingoo.ai/explainer-*"]],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": ["@explainer-studio/e2e"]
+}

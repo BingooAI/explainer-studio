@@ -1,0 +1,9 @@
+dist/
+.next/
+.turbo/
+node_modules/
+contract/
+generated/
+coverage/
+pnpm-lock.yaml
+*.md
