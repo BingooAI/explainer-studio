@@ -16,6 +16,7 @@ const PURE_PACKAGES = [
   'packages/quality/**',
   'packages/providers/**',
   'packages/generator/**',
+  'packages/editor/**',
 ]
 
 const FORBIDDEN_IN_PURE = [
