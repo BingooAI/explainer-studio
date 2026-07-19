@@ -373,6 +373,12 @@ Four untrusted inputs, and they are the ones to design against:
   SVG is executable, and this product deals in SVG all day.
 - **Archive extraction** (content packs) guards against zip-slip and decompression bombs.
 - Path construction from user or model input is normalised and confined; never concatenate.
+- **Regexes over untrusted text must not backtrack.** A negated class that can swallow its
+  own delimiter — `[^\]]*` inside `[[...]]`, `[^}]*` inside `${...}` — turns repeated
+  unterminated input into quadratic work. Exclude the opening delimiter too. This has been
+  written wrong three times in this repo already, so treat a delimited-body pattern as a
+  thing to check rather than a thing to skim, and define each format's pattern **once**: a
+  regex copied between modules cannot be fixed once, so it stops being fixed at all.
 - Local models are a security feature — a school can run fully offline. Never break that.
 
 ### Automated in CI, on every PR

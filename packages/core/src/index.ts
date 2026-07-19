@@ -161,3 +161,16 @@ export {
   type SceneTimeline,
   type SoundCue,
 } from './motion/choreograph.js'
+
+export { captionText, cueNames, stripCues } from './runtime/cues.js'
+
+export {
+  buildProgram,
+  slotAt,
+  type BuildProgramOptions,
+  type NarrationSegment,
+  type Program,
+  type SceneSlot,
+} from './runtime/program.js'
+
+export { frame, type RenderCaption, type RenderItem, type RenderModel } from './runtime/frame.js'
