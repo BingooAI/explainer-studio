@@ -1,0 +1,43 @@
+{
+  "name": "@bingoo.ai/explainer-quality",
+  "version": "0.0.0",
+  "description": "Deterministic quality gates for Explainer Studio documents. Pure — never calls a model.",
+  "license": "Apache-2.0",
+  "author": "Bingoo.ai (https://bingoo.ai)",
+  "homepage": "https://github.com/BingooAI/explainer-studio",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BingooAI/explainer-studio.git",
+    "directory": "packages/quality"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@bingoo.ai/explainer-core": "workspace:*",
+    "@bingoo.ai/explainer-kernel": "workspace:*",
+    "zod": "^4.4.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
