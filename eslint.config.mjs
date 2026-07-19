@@ -11,6 +11,7 @@ import tseslint from 'typescript-eslint'
  * because a rule only written in a document erodes.
  */
 const PURE_PACKAGES = [
+  'packages/kernel/**',
   'packages/core/**',
   'packages/quality/**',
   'packages/providers/**',

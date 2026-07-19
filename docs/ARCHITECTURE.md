@@ -170,6 +170,7 @@ Apache-2.0 for every path.
 
 ```
 packages/
+  kernel      @bingoo.ai/explainer-kernel      registry + config primitives (ADR 0002)
   core        @bingoo.ai/explainer-core        pure engine + doc schema + profiles
   quality     @bingoo.ai/explainer-quality     lint · layout gate · pedagogy gate · prompt contract
   providers   @bingoo.ai/explainer-providers   port interfaces + registry + vendor-neutral helpers
@@ -187,7 +188,7 @@ docs/
   spec/       document format spec (explainer/v1)
 ```
 
-**Purity rule:** `core`, `quality`, `providers`, `generator` must not import `react`,
+**Purity rule:** `kernel`, `core`, `quality`, `providers`, `generator` must not import `react`,
 `next/*`, `react-native`, or Node builtins (`node:*`, `fs`, `path`, `crypto`). No `fetch`,
 no `process.env`, no `Date.now()`, no `Math.random()`. Enforced by ESLint in CI.
 
