@@ -34,8 +34,12 @@ reporting — the keyless path is a tested guarantee.
 Before pushing:
 
 ```bash
-pnpm check    # lint · typecheck · test · build
+pnpm check    # build · lint · typecheck · test
 ```
+
+Build runs first on purpose. Packages resolve each other through their published `types`
+entry, which points into `dist/`, so linting a clean checkout before building reports every
+cross-package type as `any` rather than as the missing build it actually is.
 
 ## Branches and commits
 
