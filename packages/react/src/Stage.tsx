@@ -77,7 +77,7 @@ export function Stage({
         ) : null,
       )}
 
-      <g color={color(theme, 'ink')}>
+      <g color={color(theme, 'ink')} fontFamily={theme.fonts.display}>
         {model.items.map((item) => {
           // An unregistered type is a configuration problem the quality gate reports, not a
           // reason for the rest of the lesson to disappear.

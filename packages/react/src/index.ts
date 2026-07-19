@@ -9,7 +9,9 @@
  */
 
 export { Stage, type StageProps } from './Stage.js'
-export { Transport, type TransportProps } from './Transport.js'
+export { PlayerBar, type PlayerBarProps } from './chrome/PlayerBar.js'
+export { SceneStrip, type SceneStripProps } from './chrome/SceneStrip.js'
+export { ensureStyles, styles, PREFIX } from './chrome/styles.js'
 export { useSpeechClock, type SpeechOptions } from './speech.js'
 export { Backdrop, type BackdropKind, type BackdropProps } from './chrome/Backdrop.js'
 export { ExplainerPlayer, type ExplainerPlayerProps } from './ExplainerPlayer.js'
