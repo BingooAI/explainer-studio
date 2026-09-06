@@ -40,7 +40,7 @@
     "@bingoo.ai/explainer-core": "workspace:*",
     "@bingoo.ai/explainer-kernel": "workspace:*",
     "@bingoo.ai/explainer-react": "workspace:*",
-    "zod": "^4.4.3"
+    "zod": "^4.5.4"
   },
   "publishConfig": {
     "access": "public",
